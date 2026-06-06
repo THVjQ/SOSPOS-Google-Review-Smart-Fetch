@@ -85,6 +85,8 @@
     // STEP 1 — Places API count check (free, every 30 min)
     // ============================================================================
     function checkReviewCount(force = false) {
+        const hour = new Date().getHours();
+        if (!force && (hour < 8 || hour >= 18)) return;
         const now     = Date.now();
         const lastRun = GM_getValue("last_count_check", 0);
         if (!force && now - lastRun < CHECK_INTERVAL_MS) return;
