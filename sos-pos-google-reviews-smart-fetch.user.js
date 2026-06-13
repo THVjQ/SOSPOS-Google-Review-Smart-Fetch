@@ -13,9 +13,9 @@
 (function() {
     'use strict';
 
-    const SERPAPI_KEY          = "41a352028e2f0083d60a7c12510bd895297a9cf977297ea1cdb7ff1a7d4d7fa4";
+    const SERPAPI_KEY          = "API KEY;
     const PLACE_ID             = "ChIJh8rjhtkNnGsRXa7ZqVInOFs";
-    const PLACES_API_KEY       = "AIzaSyDLYMnfvZ2efIeE-48Y1HF57A_1m2nN-po";
+    const PLACES_API_KEY       = "API KEY";
     const CHECK_INTERVAL_MS    = 60 * 60 * 1000; // 1 hour
     const PLACES_MONTHLY_LIMIT = 999;
     const SERP_MONTHLY_LIMIT   = 99;
