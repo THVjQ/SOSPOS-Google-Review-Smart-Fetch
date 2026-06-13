@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         SOS POS Google Reviews - Smart Fetch v14
 // @namespace    http://tampermonkey.net/
-// @version      4.2
-// @description  Checks review count every 30min (Places API, free). Only calls SerpAPI when a NEW review is detected. Monthly caps: Places 999, SerpAPI 99.
+// @version      4.3
+// @description  Checks review count every 1hr between 8am-6pm (Places API, free). Only calls SerpAPI when a NEW review is detected. Monthly caps: Places 999, SerpAPI 99.
 // @author       SOS Phone Repairs
 // @match        https://app.sospos.com.au/*
 // @grant        GM_xmlhttpRequest
@@ -13,15 +13,20 @@
 (function() {
     'use strict';
 
-    const SERPAPI_KEY          = GM_getValue('__tmm_serpapi_key__', '');
+    const SERPAPI_KEY          = "41a352028e2f0083d60a7c12510bd895297a9cf977297ea1cdb7ff1a7d4d7fa4";
     const PLACE_ID             = "ChIJh8rjhtkNnGsRXa7ZqVInOFs";
-    const PLACES_API_KEY       = GM_getValue('__tmm_places_api_key__', '');
-    const CHECK_INTERVAL_MS    = 30 * 60 * 1000;
+    const PLACES_API_KEY       = "AIzaSyDLYMnfvZ2efIeE-48Y1HF57A_1m2nN-po";
+    const CHECK_INTERVAL_MS    = 60 * 60 * 1000; // 1 hour
     const PLACES_MONTHLY_LIMIT = 999;
     const SERP_MONTHLY_LIMIT   = 99;
     const PLACES_URL           = `https://places.googleapis.com/v1/places/${PLACE_ID}`;
     const SERPAPI_URL          = () =>
         `https://serpapi.com/search.json?engine=google_maps_reviews&place_id=${PLACE_ID}&sort_by=newestFirst&api_key=${SERPAPI_KEY}`;
+
+    function isWithinOperatingHours() {
+        const hour = new Date().getHours(); // local time
+        return hour >= 8 && hour < 18;     // 8:00am to 6:00pm
+    }
 
     function normaliseReview(r) {
         const author = r.user?.name || r.authorAttribution?.displayName || r.author_name || 'Anonymous';
@@ -82,14 +87,18 @@
     }
 
     // ============================================================================
-    // STEP 1 — Places API count check (free, every 30 min)
+    // STEP 1 — Places API count check (free, every 1hr between 8am-6pm)
     // ============================================================================
     function checkReviewCount(force = false) {
-        const hour = new Date().getHours();
-        if (!force && (hour < 8 || hour >= 18)) return;
         const now     = Date.now();
         const lastRun = GM_getValue("last_count_check", 0);
         if (!force && now - lastRun < CHECK_INTERVAL_MS) return;
+
+        // Skip automatic checks outside 8am–6pm (manual ↻ still works)
+        if (!force && !isWithinOperatingHours()) {
+            console.log("[Reviews] Outside operating hours — skipping auto check");
+            return;
+        }
 
         // --- Places API monthly cap ---
         const placesCallCount = getMonthlyCount("places_call_month", "places_call_count_month");
