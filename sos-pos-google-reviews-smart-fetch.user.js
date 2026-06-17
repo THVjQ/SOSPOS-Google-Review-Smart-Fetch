@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SOS POS Google Reviews - Smart Fetch v15
 // @namespace    http://tampermonkey.net/
-// @version      5.0
+// @version      5.1
 // @description  Checks review count every 1hr between 8am-6pm (Places API, free). Only calls SerpAPI when a NEW review is detected. Monthly caps: Places 999, SerpAPI 99.
 // @author       SOS Phone Repairs
 // @match        https://app.sospos.com.au/*
@@ -82,7 +82,11 @@
 
     function refreshPopupIfOpen() {
         const p = document.getElementById('tm-review-popup');
-        if (p) { p.remove(); createPopup(); }
+        if (!p) return;
+        // Don't clobber the popup while the user is typing in the settings panel
+        if (p.contains(document.activeElement)) return;
+        p.remove();
+        createPopup();
     }
 
     function getCurrentMonth() { return new Date().toISOString().substring(0, 7); }
@@ -104,8 +108,9 @@
 
     function checkReviewCount(force = false) {
         if (!hasPlacesKey()) {
+            // Set error once — don't call refreshPopupIfOpen() here or it nukes the
+            // settings form every second while the user is typing their keys in.
             setError('Places API key not set — click ⚙ in the review panel to configure.');
-            refreshPopupIfOpen();
             return;
         }
 
@@ -257,37 +262,26 @@
 
         const missingKeys = !hasPlacesKey() || !getSerpKey();
 
-        function field(labelText, gmKey, placeholder, isPassword) {
+        function field(labelText, gmKey, placeholder) {
             const block = document.createElement('div');
             block.style.cssText = 'margin-bottom:8px;';
             block.innerHTML = `<label style="font-size:10px;font-weight:700;color:#374151;display:block;margin-bottom:3px;">${labelText}</label>`;
-            const row = document.createElement('div');
-            row.style.cssText = 'display:flex;gap:5px;align-items:center;';
             const input = document.createElement('input');
-            input.type  = isPassword ? 'password' : 'text';
-            input.value = GM_getValue(gmKey, '');
+            input.type        = 'text';
+            input.value       = GM_getValue(gmKey, '');
             input.placeholder = placeholder;
-            input.style.cssText = `flex:1;padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;
+            input.autocomplete = 'off';
+            input.style.cssText = `width:100%;padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;
                 font-size:11px;color:#111;font-family:monospace;outline:none;background:#fff;`;
             input.onfocus = () => { input.style.borderColor = '#0ea5e9'; };
             input.onblur  = () => { input.style.borderColor = '#e5e7eb'; };
-            if (isPassword) {
-                const eye = document.createElement('button');
-                eye.textContent = '👁';
-                eye.style.cssText = 'background:none;border:none;cursor:pointer;font-size:13px;padding:0 2px;';
-                eye.onclick = () => { input.type = input.type === 'password' ? 'text' : 'password'; };
-                row.appendChild(input);
-                row.appendChild(eye);
-            } else {
-                row.appendChild(input);
-            }
-            block.appendChild(row);
+            block.appendChild(input);
             return { block, input, gmKey };
         }
 
-        const f1 = field('Place ID', CFG_PLACE_ID, 'ChIJ…', false);
-        const f2 = field('Places API Key', CFG_PLACES_KEY, 'AIza…', true);
-        const f3 = field('SerpAPI Key', CFG_SERP_KEY, 'Paste key…', true);
+        const f1 = field('Place ID', CFG_PLACE_ID, 'ChIJ…');
+        const f2 = field('Places API Key', CFG_PLACES_KEY, 'AIza…');
+        const f3 = field('SerpAPI Key', CFG_SERP_KEY, 'Paste key…');
 
         const saveRow = document.createElement('div');
         saveRow.style.cssText = 'display:flex;gap:8px;align-items:center;margin-top:4px;';
