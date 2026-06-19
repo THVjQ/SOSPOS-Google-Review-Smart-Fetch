@@ -242,8 +242,8 @@
         const banner = document.createElement('div');
         banner.id = 'tm-new-review-banner';
         banner.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:99999;
-            background:#111827;color:#fff;border-radius:10px;padding:12px 16px;
-            font-family:sans-serif;font-size:13px;box-shadow:0 6px 24px rgba(0,0,0,0.3);
+            background:#0f172a;color:#e2e8f0;border-radius:10px;padding:12px 16px;
+            font-family:'Segoe UI',system-ui,sans-serif;font-size:13px;box-shadow:0 6px 24px rgba(0,0,0,0.45);
             cursor:pointer;border-left:4px solid #f59e0b;`;
         banner.innerHTML = `<b style="color:#f59e0b;">⭐ New Google Review!</b><br>
             <span style="font-size:11px;color:#9ca3af;">Click to view</span>`;
@@ -273,7 +273,7 @@
             input.autocomplete = 'off';
             input.style.cssText = `width:100%;padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;
                 font-size:11px;color:#111;font-family:monospace;outline:none;background:#fff;`;
-            input.onfocus = () => { input.style.borderColor = '#0ea5e9'; };
+            input.onfocus = () => { input.style.borderColor = '#14b8a6'; };
             input.onblur  = () => { input.style.borderColor = '#e5e7eb'; };
             block.appendChild(input);
             return { block, input, gmKey };
@@ -288,10 +288,10 @@
 
         const saveBtn = document.createElement('button');
         saveBtn.textContent = 'Save Settings';
-        saveBtn.style.cssText = `padding:6px 14px;background:#0ea5e9;color:#fff;border:none;
+        saveBtn.style.cssText = `padding:6px 14px;background:#0d9488;color:#fff;border:none;
             border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;transition:background .15s;`;
-        saveBtn.onmouseenter = () => { saveBtn.style.background = '#0284c7'; };
-        saveBtn.onmouseleave = () => { saveBtn.style.background = '#0ea5e9'; };
+        saveBtn.onmouseenter = () => { saveBtn.style.background = '#0f766e'; };
+        saveBtn.onmouseleave = () => { saveBtn.style.background = '#0d9488'; };
 
         const saveMsg = document.createElement('span');
         saveMsg.style.cssText = 'font-size:11px;color:#10b981;';
@@ -379,7 +379,7 @@
         settingsBtn.title = 'Settings';
         settingsBtn.style.cssText = btnStyle;
         settingsBtn.textContent = '⚙';
-        settingsBtn.onmouseenter = () => { settingsBtn.style.background = '#e0f2fe'; settingsBtn.style.color = '#0284c7'; };
+        settingsBtn.onmouseenter = () => { settingsBtn.style.background = '#0d2e2b'; settingsBtn.style.color = '#14b8a6'; };
         settingsBtn.onmouseleave = () => { settingsBtn.style.background = '#f3f4f6'; settingsBtn.style.color = '#6b7280'; };
 
         const refreshBtn = document.createElement('button');
@@ -407,8 +407,8 @@
             e.stopPropagation();
             const open = settingsPanel.style.display !== 'none';
             settingsPanel.style.display = open ? 'none' : 'block';
-            settingsBtn.style.background = open ? '#f3f4f6' : '#e0f2fe';
-            settingsBtn.style.color      = open ? '#6b7280' : '#0284c7';
+            settingsBtn.style.background = open ? '#f3f4f6' : '#0d2e2b';
+            settingsBtn.style.color      = open ? '#6b7280' : '#14b8a6';
         };
 
         // Body
