@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         SOS POS Google Reviews - Smart Fetch v15
 // @namespace    http://tampermonkey.net/
-// @version      5.1
+// @version      5.2
 // @description  Checks review count every 1hr between 8am-6pm (Places API, free). Only calls SerpAPI when a NEW review is detected. Monthly caps: Places 999, SerpAPI 99.
 // @author       SOS Phone Repairs
 // @match        https://app.sospos.com.au/*
@@ -20,6 +20,7 @@
     const CFG_PLACE_ID    = '__grs_place_id__';
     const CFG_PLACES_KEY  = '__grs_places_key__';
     const CFG_SERP_KEY    = '__grs_serp_key__';
+    const CFG_REVIEWS_URL = '__grs_reviews_url__';
 
     function cfg(key, fallback) { return GM_getValue(key, fallback || ''); }
     function getPlaceId()   { return cfg(CFG_PLACE_ID,   'ChIJh8rjhtkNnGsRXa7ZqVInOFs'); }
@@ -27,6 +28,13 @@
     function getSerpKey()   { return cfg(CFG_SERP_KEY,   ''); }
     function hasPlacesKey() { return !!getPlacesKey(); }
     function hasSerpKey()   { return !!getSerpKey(); }
+
+    // Reviews page link: use the pasted URL if set, otherwise build the Google
+    // reviews page straight from the Place ID.
+    function getReviewsUrl() {
+        return cfg(CFG_REVIEWS_URL, '').trim() ||
+            `https://search.google.com/local/reviews?placeid=${getPlaceId()}`;
+    }
 
     function getPlacesUrl() {
         return `https://places.googleapis.com/v1/places/${getPlaceId()}`;
@@ -283,6 +291,7 @@
         const f1 = field('Place ID', CFG_PLACE_ID, 'ChIJ…');
         const f2 = field('Places API Key', CFG_PLACES_KEY, 'AIza…');
         const f3 = field('SerpAPI Key', CFG_SERP_KEY, 'Paste key…');
+        const f4 = field('Google Reviews URL (optional — auto from Place ID if blank)', CFG_REVIEWS_URL, 'https://…');
 
         const saveRow = document.createElement('div');
         saveRow.style.cssText = 'display:flex;gap:8px;align-items:center;margin-top:4px;';
@@ -301,6 +310,7 @@
             GM_setValue(f1.gmKey, f1.input.value.trim());
             GM_setValue(f2.gmKey, f2.input.value.trim());
             GM_setValue(f3.gmKey, f3.input.value.trim());
+            GM_setValue(f4.gmKey, f4.input.value.trim());
             saveMsg.textContent = '✓ Saved — changes apply immediately';
             setTimeout(() => { saveMsg.textContent = ''; }, 3000);
         };
@@ -311,6 +321,7 @@
         wrap.appendChild(f1.block);
         wrap.appendChild(f2.block);
         wrap.appendChild(f3.block);
+        wrap.appendChild(f4.block);
         wrap.appendChild(saveRow);
 
         if (missingKeys) {
@@ -376,6 +387,14 @@
             width:30px;height:30px;display:flex;align-items:center;justify-content:center;
             font-size:14px;color:#6b7280;transition:background .12s,color .12s;`;
 
+        const openBtn = document.createElement('button');
+        openBtn.title = 'Open Google Reviews page';
+        openBtn.style.cssText = btnStyle;
+        openBtn.textContent = '🔗';
+        openBtn.onmouseenter = () => { openBtn.style.background = '#e0edff'; openBtn.style.color = '#4285f4'; };
+        openBtn.onmouseleave = () => { openBtn.style.background = '#f3f4f6'; openBtn.style.color = '#6b7280'; };
+        openBtn.onclick = e => { e.stopPropagation(); window.open(getReviewsUrl(), '_blank', 'noopener'); };
+
         const settingsBtn = document.createElement('button');
         settingsBtn.title = 'Settings';
         settingsBtn.style.cssText = btnStyle;
@@ -394,6 +413,7 @@
         closeBtn2.style.cssText = `background:none;border:none;cursor:pointer;font-size:18px;color:#9ca3af;`;
         closeBtn2.textContent = '✕';
 
+        btnGroup.appendChild(openBtn);
         btnGroup.appendChild(settingsBtn);
         btnGroup.appendChild(refreshBtn);
         btnGroup.appendChild(closeBtn2);
